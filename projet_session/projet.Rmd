@@ -1,0 +1,118 @@
+---
+title: "POL-6078: Projet de session"
+author: "Victor Verville"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{=html}
+<style>
+p { text-align: justify; }
+</style>
+```
+
+## Question de recherche et revue de littérature
+
+Comment l'intérêt politique influence le niveau de confiance envers les politiciens? Pour répondre à cette question de recherche, je commence en faisant une revue de littérature sur mon sujet. Pour se faire, j'ai utilisé l'outil numérique Elicit. Elicit est un outil de synthèse de la connaissance qui permet de trouver des papiers sur tous les sujets. J'ai donc posé cette question à Elicit: "How does political interest influence the confidence level in politicians?" J'ai écrit ma question en anglais, car Elicit a plus de facilité à trouver des articles en anglais qu'en français. Ensuite, Elicit m'a sorti les dix articles les plus pertinents pour ma recherche. Cependant, de ces dix articles, seulement trois étaient perçus comme intéressants pour ma recherche selon Elicit. Le peu de papiers sur le sujet démontre donc toute l'importance de répondre à cette question pour contribuer à la science. J'ai ensuite sorti le résumé qu'Elicit a fait de mes trois articles et je l'ai traduit en français grâce à ChatGPT. Ma revue de littérature donne donc ceci: Les preuves suggèrent que l’intérêt politique influence la confiance par plusieurs mécanismes. A. Cichocka et al. (2017) ont trouvé une relation quadratique négative entre la confiance dans le système et l’engagement politique, ce qui signifie que les individus ayant une confiance modérée dans le système sont les plus susceptibles de participer politiquement. Patrick Flavin et al. (2013) ont spécifiquement noté que l’intérêt politique renforce la relation entre les préférences politiques et la confiance dans le gouvernement, les citoyens rapportant une confiance plus faible à mesure que la distance idéologique par rapport aux politiques de l’État augmente. Myunghee Kim et al. (2007) ont renforcé cette idée en démontrant que la confiance des citoyens est la plus positivement affectée lorsque leurs préférences politiques médianes sont prises en compte dans les processus politiques. La relation semble nuancée, l’intérêt politique servant à la fois de prédicteur et de modérateur de la confiance envers les institutions politiques.
+
+La revue de littérature sortie par Elicit est disponible via le lien suivant : https://elicit.com/find-papers/c68ab360-0830-4ee8-9aee-61a3b81ef04b
+
+J'ai ensuite utilisé Google Scholar pour trouver les sources en APA et pour les citer dans mon travail. En effet, j'ai fait le choix éditorial de ne pas utiliser d'outils de gestion de bibliographie comme Zotero, alors qu'il s'agit d'un très court état du savoir avec peu de sources mobilisées. Cependant, Zotero est essentiel et fortement suggéré pour des états du savoir (et des projets) plus longs, car il permet d'annoter et de regrouper toutes nos sources au même endroit, en permettant une bibliographie automatisée.
+
+## Hypothèses
+
+À partir des informations trouvées dans notre revue de littérature, il est possible de dériver des hypothèses testables empiriquement.
+
+H1: Il y a une corrélation entre l'intérêt politique et la confiance envers les politiciens, mais elle est non linéaire.
+
+H2: Un intérêt politique plus élevé est associé à une confiance accrue envers les politiciens.
+
+## Collecte de données
+
+Afin de répondre à ma question de recherche, j'ai utilisé une base de données du Comparative Study of Electoral Systems (CSES). Il s'agit d'un programme qui récolte des données électorales de différents pays à travers le monde depuis 1996. Le 5e module, celui utilisé ici, prend des données de 2016 à 2021. Je vais utiliser la base de données préalablement nettoyée offerte lors d'un de mes cours universitaires, ainsi que du codebook fourni à cet effet. On peut cependant avoir accès à la base de données en suivant ce lien: <https://cses.org/data-download/cses-module-5-2016-2021/>
+
+Le jeu de données nettoyé, ainsi que le codebook utilisé est disponible sur le repository de mon site Web (<https://github.com/VictorVerville/VictorVerville.github.io>)
+
+J'ai téléchargé la base de données en .rds, car cela se prête bien lorsque vient le temps d'analyser et de visualiser nos données lors de l'étape suivante.
+
+## Analyse et visualisation des données
+
+Pour répondre à H1 et H2, il a été possible de faire deux régressions à l'aide de la fonction lm() en base R. La régression linéaire simple entre l'intérêt politique et la confiance envers les politiciens est statistiquement significative et positive, ce qui confirme la corrélation positive entre l'intérêt politique et la confiance envers les politiciens. Pour vérifier la non-linéarité de la corrélation postulée dans H1, il y a aussi été possible de faire une régression quadratique où, là aussi, la relation est statistiquement significative. H2 est donc confirmée : dans les deux cas, la relation est statisquement significative et positive, c'est-à-dire que plus on a de l'intérêt pour la politique, plus on a confiance envers les politiciens. Pour voir la relation dans les deux régressions, il est possible d'avoir accès au code R sur le repository de mon site Web sur GitHub. Sinon, nous allons visualiser la relation grâce à ggplot sur R. 
+
+L'analyse et la visualisation des données a été possible grâce à ggplot sur R. Après plusieurs aller-retours avec ChatGPT pour trouver le meilleur graphique, on se trouve avec la figure suivante:
+
+```{r visualisation, fig.width=12, fig.height=8, echo=FALSE, results='hide', warning=FALSE}
+
+# Aller chercher les packages disponibles avec la tidyverse
+library(tidyverse)
+
+# Importer la base de données
+CSES <- readRDS("~/Desktop/Science Politique/A25/Outils numériques en sciences sociales/VictorVerville.github.io/projet_session/donnees/CSES.rds")
+
+str(CSES$int_pol)
+str(CSES$att_elites)
+
+# Régression linéaire simple
+
+modele1 <- lm(att_elites ~ int_pol, data = CSES)
+summary(modele1)
+
+# Régression quadratique (non linéraire)
+
+modele_quad <- lm(att_elites ~ int_pol + I(int_pol^2), data = CSES)
+summary(modele_quad)
+
+sum(!is.na(CSES$att_elites) & !is.na(CSES$int_pol))
+
+# Supprimer les lignes avec NA pour ne pas avoir de problème
+CSES_plot <- CSES[!is.na(CSES$int_pol) & !is.na(CSES$att_elites), ]
+
+# Créer un dataframe avec les valeurs prédites
+pred_quad <- data.frame(
+  int_pol = seq(min(CSES_plot$int_pol), max(CSES_plot$int_pol), length.out = 100)
+)
+pred_quad$att_elites <- predict(modele_quad, newdata = pred_quad)
+
+# Créer une suite de valeurs pour int_pol de 1 à 4
+pred_quad <- data.frame(int_pol = seq(1, 4, length.out = 100))
+pred_quad$att_elites <- predict(modele_quad, newdata = pred_quad)
+
+# Graphique
+ggplot(CSES_plot, aes(x = int_pol, y = att_elites)) +
+  geom_jitter(width = 0.1, height = 0, alpha = 0.2, color = "grey50") +  # points individuels
+  geom_line(data = pred_quad, aes(x = int_pol, y = att_elites), color = "steelblue", size = 1.5) + # quadratique
+  geom_smooth(method = "lm", formula = y ~ x, color = "black", linetype = "dashed", size = 1, se = TRUE) + # linéaire
+  scale_x_continuous(breaks = 1:4, labels = c("Pas du tout", "Un peu", "Assez", "Très")) +
+  scale_y_continuous(limits = c(0,28)) +
+  labs(
+    title = "Intérêt politique et confiance envers les politiciens",
+    x = "Intérêt politique",
+    y = "Confiance envers les politiciens",
+    caption = "Ligne bleue : régression quadratique\nLigne noire (dashed) : régression linéaire"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold")
+  )
+```
+
+Le graphique illustre la corrélation positive entre l'intérêt politique et la confiance envers les politiciens, qui confirme H2. On remarque que dans le cas des deux relations linéaires et quadratiques, elles se ressemblent sensiblement. Il n'y a pas une linéarité parfaite, mais cette relation est loin d'être non linéaire, comme le voulait H1. On peut donc partiellement infirmer H1: la corrélation entre nos deux variables existe, mais elle est sensiblement linéaire. Cependant, une des limites de nos résultats est que la variable d'intérêt politique est ordinale (Pas du tout, Un peu, Assez, Très). Cela fait en sorte qu'on peut moins voir la courbe quadratique et la non-linéarité de notre relation. C'est une des grandes limites de cette recherche. J'invite donc des recherches futures à mesurer le niveau d'intérêt avec des variables numériques discrètes (comme de 0 à 10). Cela permettra de mieux illustrer notre relation.
+
+## Discussion
+
+Ce présent travail a permis d'élaborer tout le cycle de la recherche, de la question de recherche aux résultats, en mettant l'emphase sur les outils numériques qui façonnent notre manière de faire de la recherche, et donc, la science.
+
+En effet, la revue de littérature s'est entièrement faite grâce à Elicit. Cet outil m'a permis de trouver les ouvrages les plus pertinents pour ma recherche, en plus de bâtir, par elle même, ma revue de littérature. Bien évidemment, un projet plus étoffé aurait besoin d'une recherche approfondie et plus complète, notamment en lisant en profondeur les articles, mais le but de ce petit projet de recherche était plutôt de démontrer l'utilité de cet outil numérique en recherche. Ensuite, le langage de programmation R est au coeur de toute la recherche. C'est simple: R permet de tout faire. En effet, plutôt que d'utiliser plusieurs outils pour écrire mon étude, analyser et visualiser mes données, R m'a permis d'écrire mon étude en RMarkdown et d'analyser et de visualiser mes résultats avec ggplot. En plus, R est transparent et réplicable, ce qui est vraiment important en recherche. En effet, j'ai pu rendre mon code entièrement disponible pour que quiconque puisse refaire mon étude, en critiquant notamment mes résultats. R est d'ailleurs accessible à tous gratuitement. Il existe d'ailleurs des cours pour se familiariser avec l'outil (mais payants) comme DataCamp. Ces cours offerts illustrent à quel point ce logiciel est rendu populaire, sans parler des inombrables packages disponibles à la communauté, faits par la communauté, pour améliorer le logiciel. Bref, R est un outil incontournable en raison de son accessibilité, sa popularité, son esprit de communauté, sa transparence et sa réplicabilité notamment. Dans la lignée de la réplicabilité et de la transparence, mon projet est hébergé sur GitHub. GitHub permet toute la transparence dans mon projet: mon codebook, ma base de données, ainsi que la recherche Elicit est disponible sur le repository de mon site Web sur GitHub. De plus, toute la communauté scientifique peut faire des pull requests sur GitHub pour améliorer le projet. Ça illustre tout le travail d'équipe derrière cette philosophie du logiciel libre. L'intelligence artificielle a été importante tout le long de cette recherche. Elle m'a permis de traduire ma revue de littérature, mais m'a aussi permis de visualiser mes données. En effet, pour m'aider avec mes graphiques ggplot, ChatGPT m'a proposé des codes pour améliorer ma visualisation. Bref, tout cela démontre très bien la philosophie du logiciel libre, qui est au coeur de la recherche et du cours POL-6078 Outils numériques en sciences sociales.
+
+## Bibliographie
+
+Cichocka, A., Górska, P., Jost, J. T., Sutton, R. M., & Bilewicz, M. (2018). What inverted U can do for your country: A curvilinear relationship between confidence in the social system and political engagement. Journal of personality and social psychology, 115(5), 883.
+
+Flavin, P. (2013). Policy Representation and Evaluations of State Government. State and Local Government Review, 45, 139 - 152.
+
+Kim, M. (2007). Citizens' confidence in government, parliament and political parties. Politics & Policy, 35(3), 496-521.
